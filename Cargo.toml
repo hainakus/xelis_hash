@@ -1,7 +1,10 @@
 [package]
-name = "xelis_hash"
-version = "0.1.0"
+description = "A Xelihash optimize algo package"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+name = "xelis_hash"
+version = "0.1.2"
+repository = "https://github.com/xelis-project/xelis-hash"
 
 [dependencies]
 aes = { version = "0.8.3", features = ["hazmat"] }

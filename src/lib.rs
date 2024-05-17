@@ -1,7 +1,6 @@
-#![cfg_attr(feature = "nightly", feature(portable_simd))]
 
-#[cfg(feature = "nightly")]
-use std::{ptr::read_unaligned, simd::{cmp::SimdPartialEq, num::SimdUint, u32x16}};
+
+
 
 use aes::cipher::generic_array::GenericArray;
 use thiserror::Error as ThisError;
@@ -163,29 +162,7 @@ pub fn xelis_hash(input: &mut [u8], scratch_pad: &mut [u64; MEMORY_SIZE]) -> Res
                 let index = indices[index_in_indices] as usize;
                 indices[index_in_indices] = indices[slot_idx];
 
-                #[cfg(feature = "nightly")]
-                {
-                    let mut sum_buffer = u32x16::splat(0);
 
-                    for k in (0..SLOT_LENGTH).step_by(16) {
-                        let slot_vector = u32x16::from_array(unsafe { read_unaligned(&slots[k] as *const u32 as *const [u32; 16]) });
-                        let values = u32x16::from_array(unsafe { read_unaligned(&small_pad[j * SLOT_LENGTH + k] as *const u32 as *const [u32; 16]) });
-
-                        let sign_mask = (slot_vector >> 31).simd_eq(u32x16::splat(0));
-                        sum_buffer = sign_mask.select(sum_buffer + values, sum_buffer - values);
-                    }
-
-                    if slots[index] >> 31 == 0 {
-                        sum_buffer[index % 16] -= small_pad[j * SLOT_LENGTH + index];
-                    } else {
-                        sum_buffer[index % 16] += small_pad[j * SLOT_LENGTH + index];
-                    }
-
-
-                    slots[index] += sum_buffer.reduce_sum();
-                }
-
-                #[cfg(not(feature = "nightly"))]
                 {
                     let mut sum = slots[index];
                     let offset = j * SLOT_LENGTH;
